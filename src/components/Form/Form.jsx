@@ -17,8 +17,9 @@ export default function Form({ onSubmit }) {
   };
 
   const handleSubmit = e => {
+    console.log('Submit');
     e.preventDefault();
-    onSubmit(data.userName, data.number);
+    onSubmit(data.name, data.number);
     reset();
   };
 

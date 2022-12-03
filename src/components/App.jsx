@@ -20,24 +20,19 @@ export default function App() {
   const [filter, setFilter] = useState('');
 
   const formSubmitHandler = data => {
-    const { name, number } = data;
-
-    const normalizedName = name.toLowerCase();
+    const normalizedName = data.name.toLowerCase();
 
     const checkByName = contacts.find(
       contact => contact.name.toLowerCase() === normalizedName
     );
     if (checkByName) {
-      alert(`${name} is already in contacts `);
+      alert(`${data.name} is already in contacts `);
     } else {
-      setContacts(prev => {
-        const newContact = {
-          name,
-          number,
-          id: shortid.generate(),
-        };
-        return [prev, ...newContact];
-      });
+      setContacts(prev => ({
+        ...data,
+        id: shortid.generate(),
+        ...prev.contacts,
+      }));
     }
   };
 
@@ -64,7 +59,7 @@ export default function App() {
     const dataNumbers = localStorage.getItem(LS_KEY);
 
     if (dataNumbers) {
-      setContacts({ contacts: JSON.parse(dataNumbers) });
+      setContacts(JSON.parse(dataNumbers));
     }
   }, []);
 
