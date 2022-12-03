@@ -1,6 +1,6 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 
-import { Form } from './Form/Form';
+import Form from './Form/Form';
 import { ContactsList } from './contactsBook/Contacts';
 import shortid from 'shortid';
 import { Filter } from './Filter/Filter';
@@ -8,83 +8,90 @@ import { Section } from './Section/Section';
 
 const LS_KEY = 'contact';
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+const firstContacts = [
+  { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
+  { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
+  { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
+  { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+];
 
-  componentDidMount() {
-    const dataNumbers = localStorage.getItem(LS_KEY);
+export default function App() {
+  const [contacts, setContacts] = useState(firstContacts);
+  const [filter, setFilter] = useState('');
 
-    if (dataNumbers) {
-      this.setState({ contacts: JSON.parse(dataNumbers) });
-    }
-  }
+  const formSubmitHandler = data => {
+    const { name, number } = data;
 
-  componentDidUpdate() {
-    localStorage.setItem(LS_KEY, JSON.stringify(this.state.contacts));
-  }
+    const normalizedName = name.toLowerCase();
 
-  formSubmitHandler = data => {
-    const normalizedName = data.name.toLowerCase();
-
-    const checkByName = this.state.contacts.find(
+    const checkByName = contacts.find(
       contact => contact.name.toLowerCase() === normalizedName
     );
     if (checkByName) {
-      alert(`${data.name} is already in contacts `);
+      alert(`${name} is already in contacts `);
     } else {
-      this.setState(prevState => ({
-        contacts: [{ ...data, id: shortid.generate() }, ...prevState.contacts],
-      }));
+      setContacts(prev => {
+        const newContact = {
+          name,
+          number,
+          id: shortid.generate(),
+        };
+        return [prev, ...newContact];
+      });
     }
   };
 
-  handleDeleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  const handleDeleteContact = id => {
+    setContacts(prevState => {
+      return contacts.filter(el => el.id !== id);
+    });
   };
 
-  changeFilter = e => {
-    this.setState({ filter: e.currentTarget.value });
+  const changeFilter = e => {
+    const { value } = e.currentTarget;
+    setFilter(value);
   };
 
-  getVisibleContacts = () => {
-    const normalizedFilter = this.state.filter.toLowerCase();
+  const getVisibleContacts = () => {
+    const normalizedFilter = filter.toLowerCase();
 
-    return this.state.contacts.filter(contact =>
+    return contacts.filter(contact =>
       contact.name.toLowerCase().includes(normalizedFilter)
     );
   };
 
-  render() {
-    const visibleContacts = this.getVisibleContacts();
-    return (
-      <div
-        style={{
-          height: '100vh',
-          padding: '20px',
-          color: '#010101',
-        }}
-      >
-        <Section title="PhoneBook">
-          <Form onSubmit={this.formSubmitHandler} />
-        </Section>
-        <Section title="Contacts">
-          <Filter value={this.state.filter} onChange={this.changeFilter} />
-          <ContactsList
-            deleteContact={this.handleDeleteContact}
-            contacts={visibleContacts}
-          />
-        </Section>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const dataNumbers = localStorage.getItem(LS_KEY);
+
+    if (dataNumbers) {
+      setContacts({ contacts: JSON.parse(dataNumbers) });
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(LS_KEY, JSON.stringify(contacts));
+  }, [contacts]);
+
+  const visibleContacts = getVisibleContacts();
+
+  return (
+    <div
+      style={{
+        height: '100vh',
+        padding: '20px',
+        color: '#010101',
+      }}
+    >
+      <Section title="PhoneBook">
+        <Form onSubmit={formSubmitHandler} />
+      </Section>
+      <Section title="Contacts">
+        <Filter value={filter} onChange={changeFilter} />
+        <ContactsList
+          deleteContact={handleDeleteContact}
+          contacts={visibleContacts}
+        />
+      </Section>
+    </div>
+  );
 }
