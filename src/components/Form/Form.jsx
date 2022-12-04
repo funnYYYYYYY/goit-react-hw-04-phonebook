@@ -17,9 +17,10 @@ export default function Form({ onSubmit }) {
   };
 
   const handleSubmit = e => {
-    console.log('Submit');
     e.preventDefault();
-    onSubmit(data.name, data.number);
+    console.log(data);
+    onSubmit(data);
+
     reset();
   };
 
@@ -28,7 +29,15 @@ export default function Form({ onSubmit }) {
   };
 
   return (
-    <Container onSubmit={handleSubmit}>
+    <Container
+      // onSubmit={evt => {
+      //   evt.preventDefault();
+      //   onSubmit(data.userName, data.number);
+      //   reset();
+      // }}
+
+      onSubmit={handleSubmit}
+    >
       <Label>
         Name
         <Input

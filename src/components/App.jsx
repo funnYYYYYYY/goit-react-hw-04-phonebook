@@ -8,16 +8,14 @@ import { Section } from './Section/Section';
 
 const LS_KEY = 'contact';
 
-const firstContacts = [
-  { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-  { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-  { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-  { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-];
-
 export default function App() {
-  const [contacts, setContacts] = useState(firstContacts);
+  const [contacts, setContacts] = useState([]);
   const [filter, setFilter] = useState('');
+
+  useEffect(
+    () => localStorage.setItem(LS_KEY, JSON.stringify(contacts)),
+    [contacts]
+  );
 
   const formSubmitHandler = data => {
     const normalizedName = data.name.toLowerCase();
@@ -28,11 +26,7 @@ export default function App() {
     if (checkByName) {
       alert(`${data.name} is already in contacts `);
     } else {
-      setContacts(prev => ({
-        ...data,
-        id: shortid.generate(),
-        ...prev.contacts,
-      }));
+      setContacts(prev => [...prev, { id: shortid.generate(), ...data }]);
     }
   };
 
@@ -47,27 +41,18 @@ export default function App() {
     setFilter(value);
   };
 
-  const getVisibleContacts = () => {
-    const normalizedFilter = filter.toLowerCase();
+  // useEffect(() => {
+  //   const dataNumbers = localStorage.getItem(LS_KEY);
 
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
-    );
-  };
+  //   if (dataNumbers) {
+  //     setContacts(JSON.parse(dataNumbers));
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    const dataNumbers = localStorage.getItem(LS_KEY);
-
-    if (dataNumbers) {
-      setContacts(JSON.parse(dataNumbers));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(LS_KEY, JSON.stringify(contacts));
-  }, [contacts]);
-
-  const visibleContacts = getVisibleContacts();
+  const normalizedFilter = filter.toLowerCase();
+  const visibleContacts = contacts.filter(contact =>
+    contact.name.toLowerCase().includes(normalizedFilter)
+  );
 
   return (
     <div
@@ -82,11 +67,25 @@ export default function App() {
       </Section>
       <Section title="Contacts">
         <Filter value={filter} onChange={changeFilter} />
-        <ContactsList
-          deleteContact={handleDeleteContact}
-          contacts={visibleContacts}
-        />
+        {contacts.length > 0 && (
+          <ContactsList
+            deleteContact={handleDeleteContact}
+            contacts={visibleContacts}
+          />
+        )}
       </Section>
     </div>
   );
 }
+
+//  useEffect(() => {
+//   const savedContacts = JSON.parse(window.localStorage.getItem('contacts'));
+//   if (savedContacts?.length) {
+//     setContacts([...savedContacts]);
+//   }
+// }, []);
+
+// useEffect(() => {
+//   if (!isFirstRender.current) {
+//     window.localStorage.setItem('contacts', JSON.stringify(contacts));
+//   }}
