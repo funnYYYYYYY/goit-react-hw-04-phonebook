@@ -6,16 +6,9 @@ import shortid from 'shortid';
 import { Filter } from './Filter/Filter';
 import { Section } from './Section/Section';
 
-const LS_KEY = 'contact';
-
 export default function App() {
   const [contacts, setContacts] = useState([]);
   const [filter, setFilter] = useState('');
-
-  useEffect(
-    () => localStorage.setItem(LS_KEY, JSON.stringify(contacts)),
-    [contacts]
-  );
 
   const formSubmitHandler = data => {
     const normalizedName = data.name.toLowerCase();
@@ -41,13 +34,19 @@ export default function App() {
     setFilter(value);
   };
 
-  // useEffect(() => {
-  //   const dataNumbers = localStorage.getItem(LS_KEY);
+  useEffect(() => {
+    const contacts = localStorage.getItem('contacts');
+    const parsedContacts = JSON.parse(contacts);
+    if (parsedContacts) {
+      setContacts(parsedContacts);
+    }
+  }, []);
 
-  //   if (dataNumbers) {
-  //     setContacts(JSON.parse(dataNumbers));
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (contacts.length) {
+      localStorage.setItem('contacts', JSON.stringify(contacts));
+    }
+  }, [contacts]);
 
   const normalizedFilter = filter.toLowerCase();
   const visibleContacts = contacts.filter(contact =>
@@ -77,15 +76,3 @@ export default function App() {
     </div>
   );
 }
-
-//  useEffect(() => {
-//   const savedContacts = JSON.parse(window.localStorage.getItem('contacts'));
-//   if (savedContacts?.length) {
-//     setContacts([...savedContacts]);
-//   }
-// }, []);
-
-// useEffect(() => {
-//   if (!isFirstRender.current) {
-//     window.localStorage.setItem('contacts', JSON.stringify(contacts));
-//   }}
